@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <!-- Load Playfair Display (Serif) and Inter (Sans-serif) fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      background-color: #f8fafc; /* Bleached Paper */
+      color: #1e293b; /* Slate Navy */
+    }
+    .academic-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      color: #0f172a; /* Midnight Ink */
+    }
+    
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    @keyframes gold-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.6; }
+    }
+    .pulse-gold {
+      animation: gold-pulse 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="font-sans text-xs h-screen flex flex-col antialiased selection:bg-indigo-100">
+
+  <!-- BRAND HEADER (Academic Monograph Style) -->
+  <div class="p-5 bg-white border-b border-slate-200 shadow-sm shrink-0">
+    <div class="flex items-baseline justify-between">
+      <h1 class="academic-title font-bold text-xl tracking-tight flex items-center gap-2">
+        <i data-lucide="book-open" class="w-5 h-5 text-slate-800"></i> Asisten Skripsi
+      </h1>
+      <span class="text-[9px] font-mono tracking-widest text-slate-400 uppercase">AGY v2.0</span>
+    </div>
+    <div class="w-8 h-[2px] bg-slate-800 mt-2"></div>
+    <p class="text-[10px] text-slate-500 italic mt-2.5">Otomatisasi & Standardisasi Naskah Ilmiah</p>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="flex bg-white border-b border-slate-200 shrink-0 text-slate-500 font-medium">
+    <button id="tab-btn-terms" onclick="switchTab('terms')" class="flex-1 py-3 text-center border-b-[3px] border-slate-900 text-slate-900 font-semibold transition focus:outline-none flex items-center justify-center gap-1.5">
+      <i data-lucide="languages" class="w-3.5 h-3.5"></i> Istilah Asing
+    </button>
+    <button id="tab-btn-captions" onclick="switchTab('captions')" class="flex-1 py-3 text-center border-b-[3px] border-transparent hover:text-slate-800 transition focus:outline-none flex items-center justify-center gap-1.5">
+      <i data-lucide="image" class="w-3.5 h-3.5"></i> Gambar & Tabel
+    </button>
+    <button id="tab-btn-code" onclick="switchTab('code')" class="flex-1 py-3 text-center border-b-[3px] border-transparent hover:text-slate-800 transition focus:outline-none flex items-center justify-center gap-1.5">
+      <i data-lucide="code-2" class="w-3.5 h-3.5"></i> Kode
+    </button>
+  </div>
+
+  <!-- TAB PANELS -->
+  <div class="flex-1 overflow-y-auto p-4 space-y-5 pb-20">
+
+    <!-- 1. TAB PANEL: ISTILAH ASING -->
+    <div id="tab-content-terms" class="space-y-5">
+      <div class="bg-slate-100 border border-slate-200 rounded p-3 italic text-slate-600 leading-relaxed text-[11px]">
+        Sistem ini mendeteksi kata berbahasa Inggris dan menerapkan format cetak miring secara otomatis. Preferensi persetujuan disimpan langsung ke dalam dokumen Anda.
+      </div>
+
+      <button id="btn-analyze" onclick="startAnalysis()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 px-4 rounded transition shadow-sm tracking-wide flex items-center justify-center gap-2">
+        <i data-lucide="search" class="w-4 h-4"></i> Mulai Analisis Dokumen
+      </button>
+
+      <div id="loader" class="hidden text-center py-4">
+        <i data-lucide="loader-2" class="animate-spin h-5 w-5 text-slate-900 inline-block"></i>
+        <p class="text-[10px] text-slate-500 mt-2 font-medium">Memindai peristilahan asing...</p>
+      </div>
+
+      <div id="terms-main-panel" class="hidden space-y-5">
+        <div class="space-y-2">
+          <div class="flex justify-between items-baseline border-b border-slate-200 pb-1">
+            <span class="academic-title font-bold text-xs uppercase tracking-wide">Terdeteksi Asing</span>
+            <span id="count-foreign" class="bg-slate-900 text-white text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">0</span>
+          </div>
+          <div class="flex gap-1">
+            <input type="text" id="add-foreign-input" placeholder="Masukkan istilah baru..." class="flex-1 border border-slate-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-slate-800 bg-white">
+            <button onclick="addManualTerm('foreign')" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 rounded text-xs font-bold font-mono flex items-center justify-center">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <input type="text" id="search-foreign" oninput="filterLists()" placeholder="Filter istilah asing..." class="w-full border border-slate-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-slate-800 bg-white">
+          <div id="list-foreign" class="max-h-48 overflow-y-auto border border-slate-200 bg-white rounded p-1 space-y-1"></div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-baseline border-b border-slate-200 pb-1">
+            <span class="academic-title font-bold text-xs uppercase tracking-wide">Pengecualian (Tegak)</span>
+            <span id="count-excluded" class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">0</span>
+          </div>
+          <div class="flex gap-1">
+            <input type="text" id="add-excluded-input" placeholder="Pengecualian baru..." class="flex-1 border border-slate-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-slate-800 bg-white">
+            <button onclick="addManualTerm('excluded')" class="bg-slate-600 hover:bg-slate-500 text-white px-3 py-1 rounded text-xs font-bold font-mono flex items-center justify-center">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <input type="text" id="search-excluded" oninput="filterLists()" placeholder="Filter kata dikecualikan..." class="w-full border border-slate-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-slate-800 bg-white">
+          <div id="list-excluded" class="max-h-48 overflow-y-auto border border-slate-200 bg-white rounded p-1 space-y-1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. TAB PANEL: GAMBAR & TABEL (CAPTION MANAGER) -->
+    <div id="tab-content-captions" class="hidden space-y-5">
+      <div class="bg-slate-100 border border-slate-200 rounded p-3 italic text-slate-600 leading-relaxed text-[11px]">
+        Judul bab dideteksi otomatis berdasarkan format <strong>BAB [Angka Romawi]</strong>. Ilustrasi/tabel dekoratif seperti logo cover dapat dikecualikan dari urutan nomor.
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btn-scan-captions" onclick="scanCaptions()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Pindai Ulang
+        </button>
+        <button id="btn-renumber" onclick="renumberAll()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
+          <i data-lucide="hash" class="w-3.5 h-3.5"></i> Rapikan Nomor
+        </button>
+      </div>
+
+      <!-- Elegant Progress Indicator with Progress Bar -->
+      <div id="loader-captions" class="hidden space-y-3 py-4 bg-slate-100/50 border border-slate-200/60 rounded p-4">
+        <div class="flex items-center justify-between text-slate-700 font-semibold mb-1">
+          <span id="loader-captions-title" class="text-[11px] uppercase tracking-wider font-mono">Memproses Dokumen...</span>
+          <i data-lucide="loader-2" class="animate-spin h-3.5 w-3.5 text-slate-800"></i>
+        </div>
+        <!-- Progress Bar Track -->
+        <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden shadow-inner">
+          <!-- Progress Bar Fill -->
+          <div id="loader-captions-bar" class="bg-slate-900 h-full w-0 transition-all duration-300"></div>
+        </div>
+        <p id="loader-captions-text" class="text-[10px] text-slate-500 font-mono text-center italic break-words leading-normal">Memulai pemindaian...</p>
+      </div>
+
+      <div id="captions-tree-container" class="space-y-4">
+        <div class="text-slate-400 text-center py-8 text-xs italic">Menunggu pemindaian naskah...</div>
+      </div>
+    </div>
+
+    <!-- 3. TAB PANEL: BLOK KODE (LINE NUMBERS) -->
+    <div id="tab-content-code" class="hidden space-y-4">
+      <div class="bg-slate-100 border border-slate-200 rounded p-3 italic text-slate-600 leading-relaxed text-[11px]">
+        Pilih baris-baris kode di dokumen, lalu klik tombol di bawah untuk menambahkan atau menghapus nomor baris. Pemformatan teks asli tidak akan berubah.
+      </div>
+
+      <!-- Options -->
+      <div class="space-y-2">
+        <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Nomor Awal</label>
+        <input type="number" id="code-start-line" value="1" min="0"
+          class="w-full border border-slate-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-slate-800 bg-white font-mono" />
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-2">
+        <button id="btn-add-line-numbers" onclick="doAddLineNumbers()"
+          class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
+          <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> Tambah Nomor Baris
+        </button>
+        <button id="btn-remove-line-numbers" onclick="doRemoveLineNumbers()"
+          class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i> Hapus Nomor
+        </button>
+      </div>
+
+      <!-- Status message -->
+      <div id="code-tool-status" class="hidden rounded p-2.5 text-[11px] font-medium text-center"></div>
+
+      <!-- Tips -->
+      <div class="border border-slate-200 rounded p-3 space-y-1.5 text-[10px] text-slate-500">
+        <p class="font-semibold text-slate-600">Cara pakai:</p>
+        <p>1. Blok semua baris kode di dokumen</p>
+        <p>2. Atur <strong>Nomor Awal</strong> (biasanya 1)</p>
+        <p>3. Klik <strong>Tambah Nomor Baris</strong></p>
+        <p class="pt-1">Untuk menghapus, blok ulang kode tersebut lalu klik <strong>Hapus Nomor</strong>.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FRONTEND LOGIC -->
+  <script>
+    let state = {
+      foreignTerms: [],
+      excludedTerms: [],
+      captionsList: [],
+      expandedChapters: {}
+    };
+
+    // ON START: Load preferences AND auto-scan captions
+    window.onload = function() {
+      // Initialize Lucide icons on load
+      lucide.createIcons();
+      
+      // Load preferences
+      google.script.run
+        .withSuccessHandler(function(result) {
+          state.foreignTerms = result.foreignTerms || [];
+          state.excludedTerms = result.excludedTerms || [];
+          if (state.foreignTerms.length > 0 || state.excludedTerms.length > 0) {
+            document.getElementById('btn-analyze').classList.add('hidden');
+            document.getElementById('terms-main-panel').classList.remove('hidden');
+            renderLists();
+          }
+        })
+        .getPersistedPreferences();
+        
+      // Auto-scan captions instantly in the background on load!
+      scanCaptions();
+    };
+
+    function switchTab(tab) {
+      const ACTIVE   = 'flex-1 py-3 text-center border-b-[3px] border-slate-900 text-slate-900 font-semibold transition focus:outline-none flex items-center justify-center gap-1.5';
+      const INACTIVE = 'flex-1 py-3 text-center border-b-[3px] border-transparent hover:text-slate-800 transition focus:outline-none flex items-center justify-center gap-1.5';
+      const tabs = ['terms', 'captions', 'code'];
+      tabs.forEach(t => {
+        document.getElementById('tab-btn-' + t).className     = (t === tab) ? ACTIVE : INACTIVE;
+        document.getElementById('tab-content-' + t).classList.toggle('hidden', t !== tab);
+      });
+      setTimeout(lucide.createIcons, 50);
+    }
+
+    // ==========================================
+    // LOGIKA TABS: BLOK KODE (LINE NUMBERS)
+    // ==========================================
+
+    function setCodeStatus(msg, isError) {
+      const el = document.getElementById('code-tool-status');
+      el.textContent = msg;
+      el.className = 'rounded p-2.5 text-[11px] font-medium text-center '
+        + (isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200');
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 4000);
+    }
+
+    function doAddLineNumbers() {
+      const btn = document.getElementById('btn-add-line-numbers');
+      const startLine = parseInt(document.getElementById('code-start-line').value, 10) || 1;
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-3.5 h-3.5"></i> Memproses...';
+      lucide.createIcons();
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> Tambah Nomor Baris';
+          lucide.createIcons();
+          if (res.success) setCodeStatus('✓ ' + res.message, false);
+          else setCodeStatus('✗ ' + res.message, true);
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> Tambah Nomor Baris';
+          lucide.createIcons();
+          setCodeStatus('✗ Error: ' + err.message, true);
+        })
+        .addLineNumbers(startLine);
+    }
+
+    function doRemoveLineNumbers() {
+      const btn = document.getElementById('btn-remove-line-numbers');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-3.5 h-3.5"></i>';
+      lucide.createIcons();
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i> Hapus Nomor';
+          lucide.createIcons();
+          if (res.success) setCodeStatus('✓ ' + res.message, false);
+          else setCodeStatus('✗ ' + res.message, true);
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i> Hapus Nomor';
+          lucide.createIcons();
+          setCodeStatus('✗ Error: ' + err.message, true);
+        })
+        .removeLineNumbers();
+    }
+
+    // ==========================================
+    // LOGIKA TABS: ISTILAH ASING
+    // ==========================================
+
+
+    function startAnalysis() {
+      document.getElementById('btn-analyze').classList.add('hidden');
+      document.getElementById('loader').classList.remove('hidden');
+      document.getElementById('terms-main-panel').classList.add('hidden');
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          state.foreignTerms = result.foreignTerms;
+          state.excludedTerms = result.excludedTerms;
+          document.getElementById('loader').classList.add('hidden');
+          document.getElementById('terms-main-panel').classList.remove('hidden');
+          renderLists();
+        })
+        .withFailureHandler(function(err) {
+          alert("Gagal menganalisis dokumen: " + err);
+          document.getElementById('btn-analyze').classList.remove('hidden');
+          document.getElementById('loader').classList.add('hidden');
+        })
+        .analyzeDoc();
+    }
+
+    function renderLists() {
+      const searchForeignQuery = document.getElementById('search-foreign').value.toLowerCase();
+      const searchExcludedQuery = document.getElementById('search-excluded').value.toLowerCase();
+
+      const foreignContainer = document.getElementById('list-foreign');
+      const filteredForeign = state.foreignTerms.filter(t => t.toLowerCase().includes(searchForeignQuery));
+      document.getElementById('count-foreign').innerText = state.foreignTerms.length;
+
+      if (filteredForeign.length === 0) {
+        foreignContainer.innerHTML = '<p class="text-[10px] text-slate-400 text-center py-2.5">Tidak ada kata asing.</p>';
+      } else {
+        foreignContainer.innerHTML = filteredForeign.map(term => `
+          <div class="flex justify-between items-center bg-white hover:bg-slate-50 p-1.5 rounded border border-slate-200 transition">
+            <span class="font-mono text-[11px] text-slate-800 truncate mr-2 font-medium" title="${term}">${term}</span>
+            <button onclick="moveToExcluded('${term}')" class="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-medium border border-slate-200">Tegak</button>
+          </div>
+        `).join('');
+      }
+
+      const excludedContainer = document.getElementById('list-excluded');
+      const filteredExcluded = state.excludedTerms.filter(t => t.toLowerCase().includes(searchExcludedQuery));
+      document.getElementById('count-excluded').innerText = state.excludedTerms.length;
+
+      if (filteredExcluded.length === 0) {
+        excludedContainer.innerHTML = '<p class="text-[10px] text-slate-400 text-center py-2.5 italic">Belum ada kata dikecualikan.</p>';
+      } else {
+        excludedContainer.innerHTML = filteredExcluded.map(term => `
+          <div class="flex justify-between items-center bg-white hover:bg-slate-50 p-1.5 rounded border border-slate-200 transition">
+            <span class="font-mono text-[11px] text-slate-500 truncate mr-2" title="${term}">${term}</span>
+            <div class="flex gap-1">
+              <button onclick="moveToForeign('${term}')" class="text-[9px] bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-medium border border-indigo-100">Miring</button>
+              <button onclick="deleteExcluded('${term}')" class="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-500 px-1 py-0.5 rounded font-bold">✕</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      lucide.createIcons();
+    }
+
+    function filterLists() {
+      renderLists();
+    }
+
+    function saveStateToBackend() {
+      google.script.run.savePersistedPreferences(state.foreignTerms, state.excludedTerms);
+    }
+
+    function moveToExcluded(term) {
+      state.foreignTerms = state.foreignTerms.filter(t => t !== term);
+      if (!state.excludedTerms.includes(term)) {
+        state.excludedTerms.push(term);
+        state.excludedTerms.sort();
+      }
+      renderLists();
+      saveStateToBackend();
+      google.script.run.removeItalicsFromTerm(term);
+    }
+
+    // Memindahkan kata dari pengecualian kembali dimiringkan
+    function moveToForeign(term) {
+      state.excludedTerms = state.excludedTerms.filter(t => t !== term);
+      if (!state.foreignTerms.includes(term)) {
+        state.foreignTerms.push(term);
+        state.foreignTerms.sort();
+      }
+      renderLists();
+      saveStateToBackend();
+      google.script.run.applyItalicsToTerm(term);
+    }
+
+    function deleteExcluded(term) {
+      state.excludedTerms = state.excludedTerms.filter(t => t !== term);
+      renderLists();
+      saveStateToBackend();
+    }
+
+    function addManualTerm(type) {
+      if (type === 'foreign') {
+        const input = document.getElementById('add-foreign-input');
+        const value = input.value.trim();
+        if (value && !state.foreignTerms.includes(value)) {
+          state.foreignTerms.push(value);
+          state.foreignTerms.sort();
+          input.value = '';
+          renderLists();
+          saveStateToBackend();
+          google.script.run.applyItalicsToTerm(value);
+        }
+      } else if (type === 'excluded') {
+        const input = document.getElementById('add-excluded-input');
+        const value = input.value.trim();
+        if (value && !state.excludedTerms.includes(value)) {
+          state.excludedTerms.push(value);
+          state.excludedTerms.sort();
+          input.value = '';
+          renderLists();
+          saveStateToBackend();
+          google.script.run.removeItalicsFromTerm(value);
+        }
+      }
+    }
+
+    // ==========================================
+    // LOGIKA TABS: GAMBAR & TABEL
+    // ==========================================
+
+    function scanCaptions() {
+      document.getElementById('loader-captions').classList.remove('hidden');
+      document.getElementById('captions-tree-container').innerHTML = '';
+      
+      // Mulai polling progress di background
+      startProgressPolling("Memindai Naskah");
+
+      google.script.run
+        .withSuccessHandler(function(items) {
+          stopProgressPolling();
+          state.captionsList = items || [];
+          document.getElementById('loader-captions').classList.add('hidden');
+          renderManuscriptTree();
+        })
+        .withFailureHandler(function(err) {
+          stopProgressPolling();
+          alert("Gagal memindai dokumen: " + err);
+          document.getElementById('loader-captions').classList.add('hidden');
+        })
+        .getCaptionsList();
+    }
+
+    function renderManuscriptTree() {
+      try {
+        const container = document.getElementById('captions-tree-container');
+        if (state.captionsList.length === 0) {
+          container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 italic">Tidak ditemukan gambar atau tabel setelah BAB I.</p>';
+          return;
+        }
+
+        const groups = {};
+        state.captionsList.forEach(item => {
+          const ch = item.chapter || "0";
+          if (!groups[ch]) groups[ch] = [];
+          groups[ch].push(item);
+        });
+
+        const sortedChapters = Object.keys(groups).sort((a, b) => parseInt(a) - parseInt(b));
+
+        container.innerHTML = sortedChapters.map(ch => {
+          const items = groups[ch];
+          const numImages = items.filter(i => i.type === 'image' && !i.isSkipped).length;
+          const numTables = items.filter(i => i.type === 'table' && !i.isSkipped).length;
+          
+          let babLabel = ch === "0" ? "Sebelum Bab I" : `BAB ${convertToRoman(ch)}`;
+          
+          if (state.expandedChapters[ch] === undefined) {
+            state.expandedChapters[ch] = true; 
+          }
+          
+          const isExpanded = state.expandedChapters[ch];
+          const arrowIcon = isExpanded ? 'chevron-down' : 'chevron-right';
+          const hiddenClass = isExpanded ? '' : 'hidden';
+
+          const headerHtml = `
+            <button onclick="toggleAccordion('${ch}')" class="w-full flex justify-between items-center bg-white border border-slate-200 px-3.5 py-2.5 rounded shadow-sm hover:bg-slate-50 transition text-left">
+              <span class="flex items-baseline gap-2">
+                <span class="flex items-center gap-1">
+                  <i data-lucide="folder" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span class="academic-title font-bold text-xs uppercase tracking-wider">${babLabel}</span>
+                </span>
+                <span class="text-[9px] text-slate-400 font-mono">(${numImages} Gbr, ${numTables} Tbl)</span>
+              </span>
+              <i data-lucide="${arrowIcon}" class="w-3.5 h-3.5 text-slate-400"></i>
+            </button>
+          `;
+
+          const listHtml = items.map(item => {
+            const lucideIcon = item.type === 'image' ? 'image' : 'table';
+            const typeLabel = item.type === 'image' ? 'Gambar' : 'Tabel';
+            
+            let currentLabel = "";
+            let nodeStatusDot = "";
+            let borderHighlight = "border-slate-200";
+            let skippedOpacity = "";
+            let actionPanelHtml = "";
+            
+            if (item.isSkipped) {
+              currentLabel = `<span class="text-slate-400 italic">Dilewati (${typeLabel})</span>`;
+              nodeStatusDot = `
+                <div class="absolute -left-[19px] top-3.5 w-2.5 h-2.5 rounded-full bg-slate-300 border-2 border-slate-100 flex items-center justify-center"></div>
+              `;
+              skippedOpacity = "opacity-55";
+              borderHighlight = "border-slate-100 bg-slate-50/50";
+              
+              actionPanelHtml = `
+                <div class="flex justify-between items-center pt-1 border-t border-slate-100 mt-2">
+                  <span class="text-[9px] text-slate-400 uppercase font-mono">Elemen Dekoratif</span>
+                  <button id="btn-skip-${item.id}" onclick="toggleSkip(${item.elementIndex}, ${item.childIndex}, false, '${item.id}')" class="text-[9px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-0.5 rounded font-medium border border-slate-300">Sertakan Kembali</button>
+                </div>
+              `;
+            } else {
+              currentLabel = `${typeLabel} ${item.chapter}.${item.sequence}`;
+              
+              if (item.hasCaption) {
+                nodeStatusDot = `
+                  <div class="absolute -left-[20px] top-3.5 w-3 h-3 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center shadow-sm">
+                    <div class="w-1 h-1 bg-white rounded-full"></div>
+                  </div>
+                `;
+              } else {
+                nodeStatusDot = `
+                  <div class="absolute -left-[20px] top-3.5 w-3 h-3 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center shadow-sm pulse-gold">
+                    <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  </div>
+                `;
+                borderHighlight = "border-amber-300 bg-amber-50/20";
+              }
+
+              const referenceButton = item.bookmarkId
+                ? `<button id="btn-ref-${item.id}" onclick="insertRef('${item.bookmarkId}', '${currentLabel}', '${item.id}')" class="text-[9px] bg-sky-50 hover:bg-sky-100 text-sky-700 px-2.5 py-0.5 rounded font-semibold border border-sky-100 transition flex items-center gap-0.5"><i data-lucide="link-2" class="w-3 h-3"></i> Rujuk</button>`
+                : `<span class="text-[9px] text-slate-400 italic">Simpan/Renumber dulu</span>`;
+
+              actionPanelHtml = `
+                <div class="flex justify-between gap-1 mt-2.5 pt-2 border-t border-slate-100">
+                  <button id="btn-fokus-${item.id}" onclick="jumpToElement(${item.elementIndex}, ${item.childIndex}, '${item.id}')" class="text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded font-medium border border-slate-200 transition flex items-center gap-0.5"><i data-lucide="focus" class="w-3 h-3"></i> Fokus</button>
+                  <div class="flex gap-1">
+                    <button id="btn-skip-${item.id}" onclick="toggleSkip(${item.elementIndex}, ${item.childIndex}, true, '${item.id}')" class="text-[9px] bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-500 px-2 py-0.5 rounded font-medium border border-slate-200 transition flex items-center gap-0.5"><i data-lucide="eye-off" class="w-3 h-3"></i> Lewati</button>
+                    ${referenceButton}
+                  </div>
+                </div>
+                <div class="space-y-1 mt-2.5">
+                  <input type="text" id="input-title-${item.id}" value="${item.cleanTitle || ''}" placeholder="Masukkan teks judul ${typeLabel}..." class="w-full border border-slate-200 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-slate-800 bg-white">
+                  <button id="btn-save-${item.id}" onclick="saveCaption('${item.type}', ${item.elementIndex}, ${item.childIndex}, ${item.captionIndex}, '${item.bookmarkId || ''}', '${item.id}')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium text-[9px] py-1.5 rounded transition shadow-sm uppercase tracking-wider font-mono">
+                    ${item.hasCaption ? 'Simpan Perubahan' : 'Terapkan Judul'}
+                  </button>
+                </div>
+              `;
+            }
+
+            return `
+              <div class="relative pl-1 ${skippedOpacity}">
+                ${nodeStatusDot}
+                <div class="bg-white border ${borderHighlight} rounded p-3.5 shadow-sm space-y-1 transition hover:shadow-md">
+                  <div class="flex items-center gap-1.5">
+                    <i data-lucide="${lucideIcon}" class="w-3.5 h-3.5 text-slate-600"></i>
+                    <span class="font-bold text-[11px] text-slate-800 tracking-tight">${item.hasCaption ? currentLabel : `<span class="text-amber-700 font-bold">⚠️ Tanpa Judul (${currentLabel})</span>`}</span>
+                  </div>
+                  ${actionPanelHtml}
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div class="space-y-2">
+              ${headerHtml}
+              <div id="accordion-content-${ch}" class="${hiddenClass} space-y-3 pl-[14px] ml-4 border-l border-slate-200 py-1.5">
+                ${listHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        // Render newly added Lucide vector icons
+        lucide.createIcons();
+      } catch (err) {
+        alert("Gagal merender data naskah: " + err.message + "\nStack: " + err.stack);
+      }
+    }
+
+    function toggleAccordion(ch) {
+      state.expandedChapters[ch] = !state.expandedChapters[ch];
+      renderManuscriptTree();
+    }
+
+    // UPDATE UI INSTANTLY FOR SKIP/WHITELIST (NO LAG)
+    function localToggleSkip(itemId, skipState) {
+      const item = state.captionsList.find(i => i.id === itemId);
+      if (item) {
+        item.isSkipped = skipState;
+        
+        let imageCount = 1;
+        let tableCount = 1;
+        let lastChapter = "";
+        
+        state.captionsList.forEach(currItem => {
+          if (currItem.chapter !== lastChapter) {
+            imageCount = 1;
+            tableCount = 1;
+            lastChapter = currItem.chapter;
+          }
+          
+          if (currItem.isSkipped) {
+            currItem.sequence = 0;
+          } else {
+            if (currItem.type === 'image') {
+              currItem.sequence = imageCount++;
+            } else if (currItem.type === 'table') {
+              currItem.sequence = tableCount++;
+            }
+          }
+        });
+        
+        renderManuscriptTree();
+      }
+    }
+
+    // UPDATE UI INSTANTLY FOR SAVE CAPTION TITLE (NO LAG)
+    function localSaveCaption(itemId, titleText) {
+      const item = state.captionsList.find(i => i.id === itemId);
+      if (item) {
+        item.cleanTitle = titleText;
+        item.hasCaption = true;
+        // QOL: Gunakan spasi sebagai separator (Gambar x.x Judul) tanpa titik dua ':'
+        item.captionText = `${item.type === 'image' ? 'Gambar' : 'Tabel'} ${item.chapter}.${item.sequence} ${titleText}`;
+        renderManuscriptTree();
+      }
+    }
+
+    function jumpToElement(elIndex, chIndex, itemId) {
+      const btn = document.getElementById(`btn-fokus-${itemId}`);
+      const oldText = btn.innerHTML;
+      btn.innerHTML = "⏳...";
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function() {
+          btn.innerHTML = oldText;
+          btn.disabled = false;
+        })
+        .withFailureHandler(function() {
+          btn.innerHTML = oldText;
+          btn.disabled = false;
+        })
+        .selectDocumentElement(elIndex, chIndex);
+    }
+
+    function toggleSkip(elIndex, chIndex, skipState, itemId) {
+      localToggleSkip(itemId, skipState);
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.success) {
+            const item = state.captionsList.find(i => i.id === itemId);
+            if (item) {
+              item.bookmarkId = res.bookmarkId;
+            }
+          }
+        })
+        .withFailureHandler(function(err) {
+          alert("Gagal merubah status di dokumen: " + err);
+          localToggleSkip(itemId, !skipState); 
+        })
+        .toggleSkipItem(elIndex, chIndex, skipState);
+    }
+
+    function saveCaption(type, elIndex, chIndex, capIndex, bmId, itemId) {
+      const input = document.getElementById(`input-title-${itemId}`);
+      const titleText = input.value.trim();
+      if (!titleText) {
+        alert("Judul caption tidak boleh kosong!");
+        return;
+      }
+
+      // QOL: Ambil chapter & sequence dari state lokal frontend
+      const item = state.captionsList.find(i => i.id === itemId);
+      const chapter = item ? item.chapter : "0";
+      const sequence = item ? item.sequence : 1;
+
+      localSaveCaption(itemId, titleText);
+
+      const btn = document.getElementById(`btn-save-${itemId}`);
+      const oldText = btn.innerText;
+      btn.innerText = "⏳...";
+      btn.disabled = true;
+
+      // Kirim chapter & sequence ke backend agar tidak perlu scan ulang dokumen (Instan)
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.innerText = oldText;
+          btn.disabled = false;
+          if (res.success) {
+            const item = state.captionsList.find(i => i.id === itemId);
+            if (item) {
+              item.bookmarkId = res.bookmarkId;
+            }
+          } else {
+            alert("Gagal menyimpan: " + res.error);
+          }
+        })
+        .withFailureHandler(function(err) {
+          alert("Error: " + err);
+          btn.innerText = oldText;
+          btn.disabled = false;
+        })
+        .saveCaptionText(type, elIndex, chIndex, capIndex, bmId, titleText, chapter, sequence);
+    }
+
+    function renumberAll() {
+      document.getElementById('loader-captions').classList.remove('hidden');
+      
+      // Mulai polling progress di background
+      startProgressPolling("Merapikan Nomor");
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          stopProgressPolling();
+          alert(`Sukses mengurutkan ulang nomor! ${res.updatedCount} judul & tautan teks telah diselaraskan.`);
+          scanCaptions();
+        })
+        .withFailureHandler(function(err) {
+          stopProgressPolling();
+          alert("Gagal merapikan nomor: " + err);
+          document.getElementById('loader-captions').classList.add('hidden');
+        })
+        .renumberAllCaptions();
+    }
+
+    // ==========================================
+    // PROGRESS POLLING SYSTEM
+    // ==========================================
+    let progressInterval = null;
+    
+    function startProgressPolling(actionTitle) {
+      document.getElementById('loader-captions-title').innerText = actionTitle;
+      document.getElementById('loader-captions-bar').style.width = '5%';
+      document.getElementById('loader-captions-text').innerText = 'Memulai...';
+      
+      if (progressInterval) clearInterval(progressInterval);
+      
+      progressInterval = setInterval(function() {
+        google.script.run
+          .withSuccessHandler(function(progressStr) {
+            if (progressStr) {
+              document.getElementById('loader-captions-text').innerText = progressStr;
+              
+              // Ekstrak persentase dari teks jika ada format angka "%" (contoh: "Pindai naskah: 45%")
+              const match = progressStr.match(/(\d+)%/);
+              if (match) {
+                const pct = parseInt(match[1]);
+                document.getElementById('loader-captions-bar').style.width = pct + '%';
+              }
+            }
+          })
+          .getProgress();
+      }, 650); // Polling setiap 650ms untuk responsivitas tinggi tanpa overload quota
+    }
+    
+    function stopProgressPolling() {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      document.getElementById('loader-captions-bar').style.width = '100%';
+    }
+
+    function insertRef(bookmarkId, labelText, itemId) {
+      const btn = document.getElementById(`btn-ref-${itemId}`);
+      const oldText = btn.innerHTML;
+      btn.innerHTML = "⏳...";
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.innerHTML = oldText;
+          btn.disabled = false;
+          if (!res.success) {
+            alert(res.error);
+          }
+        })
+        .withFailureHandler(function(err) {
+          alert("Error: " + err);
+          btn.innerHTML = oldText;
+          btn.disabled = false;
+        })
+        .insertCrossReferenceAtCursor(bookmarkId, labelText);
+    }
+    function convertToRoman(numStr) {
+      const num = parseInt(numStr);
+      if (isNaN(num) || num <= 0) return numStr;
+      const romans = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+      return romans[num - 1] || numStr;
+    }
+  </script>
+</body>
+</html>
