@@ -6,74 +6,7 @@ Perfect for formatting theses (*Skripsi*), academic monographs, and publications
 
 ---
 
-## 🌟 Key Features
-
-### 1. Foreign Phrase Auto-Italicizer (NLP & Dictionary-Based)
-*   **Problem:** Academic writing requires all non-primary language words (e.g., English jargon in Indonesian papers) to be italicized, which is extremely tedious to do manually over a 200-page document.
-*   **Solution:** Automatically scans the document for English terms, matching them against a curated database of 500+ computer science and technical terms.
-*   **Advanced Controls:**
-    *   **Exclusion Lists:** Save words that shouldn't be italicized (e.g., proper nouns like "Wazuh", "ClickHouse", or abbreviations like "API", "JSON").
-    *   **Contextual Overrides:** Preview words in a neat accordion sidebar list and exclude them or add them to the dictionary in one click.
-    *   **Strict Layout Preservation:** The formatting engine ensures that italicizing a word does not wipe out adjacent font colors, sizes, or headings.
-
-### 2. Dynamic Caption & Cross-Reference Renumberer (O(1) Optimized)
-*   **Problem:** Adding a figure in Chapter 2 forces you to manually update every subsequent figure number (e.g., Figure 2.3 → 2.4) and locate every textual reference referring to it.
-*   **Solution:** Scans headings to detect chapter blocks (`BAB I`, `BAB II`, etc.) and automatically renumbers all figures and tables relative to their chapter (e.g., `Gambar 2.1`, `Tabel 3.2`).
-*   **Interactive Cross-Referencing:**
-    *   Generates a structured document map tree in the sidebar.
-    *   Allows you to insert a clickable reference link into the text with a single click.
-    *   Clicking **Fokus** in the sidebar jumps your cursor directly to that figure in the document.
-*   **Performance Optimization:** Runs on a pre-built $O(1)$ bookmark path cache map that avoids recursive document tree traversals, reducing document scan times from minutes to under **1.5 seconds**!
-
-### 3. Consolas Code-Block Line Numbering (Table-Aware)
-*   **Problem:** Code listings in theses need line numbers, but manual numbering messes up code copying and formatting.
-*   **Solution:** Adds or removes cleanly aligned, monospace line numbers to selected paragraphs.
-*   **Advanced Styling:**
-    *   Forced black color (`#000000`) and **Consolas** font family for maximum legibility, ignoring the underlying code block styling.
-    *   Left-padded for perfect alignment (e.g., ` 9 `, `10 `, `11 `).
-    *   **Table-Aware:** Fully supports code blocks nested inside table cells.
-
-### 4. Client-Side Page Gap Auditor (Tampermonkey Userscript)
-*   **Problem:** Google Docs does not expose its physical page layout or element coordinate offsets to the Apps Script API, making it impossible to detect large empty white spaces left at the bottom of pages when a large table or image overflows.
-*   **Solution:** A Tampermonkey browser userscript that runs in Firefox/Chrome and inspects the live rendered document.
-*   **How it works:**
-    *   **Canvas Pixel Scanner:** Google Docs renders its page view onto HTML5 canvas tiles. The userscript uses `getImageData` to read raw pixel buffers.
-    *   **Scan Upward Algorithm:** Scans the canvas from the bottom up to locate the last row containing non-white, non-transparent pixels, calculating the exact percentage of empty page space.
-    *   **CSP & Trusted Types Bypass:** Google Docs enforces strict Content Security Policies (CSP) and Trusted Types. The script bypasses this by avoiding `innerHTML` and using only secure programmatic DOM creation (`createElement`/`textContent`) and registering via `@grant GM_addStyle` to run in an isolated context.
-    *   **Persistent Accumulation Map:** Google Docs lazily renders pages and recycles off-screen canvases to save memory. The script tracks and remembers previous page measurements as you scroll through your document, displaying them in a draggable, floating UI panel.
-
----
-
-## 🏗️ Architecture
-
-```mermaid
-graph TD
-    subgraph Browser Context
-        A[Google Docs Editor Page] <-->|Renders Pages via Canvas| B(HTML5 Canvas Tiles)
-        C[Tampermonkey Userscript] -->|Reads Canvas Pixels via getImageData| B
-        C -->|Highlights Gaps & Adds Draggable Panel| A
-    end
-
-    subgraph Google Add-on Framework
-        A <-->|Container-bound Add-on| D[Sidebar HTML / TailwindCSS / Lucide]
-        D <-->|google.script.run API| E[Google Apps Script Backend]
-        E <-->|DocumentApp API| F[Google Docs Document Structure]
-        E -->|clasp CLI| G[Local Repository]
-    end
-```
-
----
-
-## 💻 Tech Stack
-
-*   **Google Apps Script (GAS):** JavaScript (ES6+), Google Workspace Add-ons framework.
-*   **Add-on Frontend:** HTML5, CSS3 (TailwindCSS CDN), Lucide Icons, Google Script API.
-*   **Browser Userscript:** Vanilla JavaScript, Canvas API, Tampermonkey API.
-*   **Version Control:** Git, Google Clasp (Command Line Apps Script Projects).
-
----
-
-## ⚙️ Installation & Setup
+## ⚙️ Quick Installation & Setup
 
 ### Part 1: Installing the Google Docs Add-on
 1. Open your Google Doc.
@@ -90,6 +23,68 @@ graph TD
 4. Press `Ctrl + S` to save.
 5. Open your Google Doc. A floating dark panel will appear in the top-right corner.
 6. Scroll slowly from the top of your document to the bottom once. The script will dynamically scan and pin every page that has excessive layout gaps.
+
+---
+
+## 💻 Tech Stack
+*   **Google Apps Script (GAS):** JavaScript (ES6+), Google Workspace Add-ons framework.
+*   **Add-on Frontend:** HTML5, CSS3 (TailwindCSS CDN), Lucide Icons, Google Script API.
+*   **Browser Userscript:** Vanilla JavaScript, Canvas API, Tampermonkey API.
+*   **Version Control:** Git, Google Clasp (Command Line Apps Script Projects).
+
+---
+
+## 🌟 Features & Technical Details
+
+<details>
+<summary><b>1. Foreign Phrase Auto-Italicizer (NLP & Dictionary-Based)</b></summary>
+<br>
+
+*   **Problem:** Academic writing requires all non-primary language words (e.g., English jargon in Indonesian papers) to be italicized, which is extremely tedious to do manually over a 200-page document.
+*   **Solution:** Automatically scans the document for English terms, matching them against a curated database of 500+ computer science and technical terms.
+*   **Advanced Controls:**
+    *   **Exclusion Lists:** Save words that shouldn't be italicized (e.g., proper nouns like "Wazuh", "ClickHouse", or abbreviations like "API", "JSON").
+    *   **Contextual Overrides:** Preview words in a neat accordion sidebar list and exclude them or add them to the dictionary in one click.
+    *   **Strict Layout Preservation:** The formatting engine ensures that italicizing a word does not wipe out adjacent font colors, sizes, or headings.
+</details>
+
+<details>
+<summary><b>2. Dynamic Caption & Cross-Reference Renumberer (O(1) Optimized)</b></summary>
+<br>
+
+*   **Problem:** Adding a figure in Chapter 2 forces you to manually update every subsequent figure number (e.g., Figure 2.3 → 2.4) and locate every textual reference referring to it.
+*   **Solution:** Scans headings to detect chapter blocks (`BAB I`, `BAB II`, etc.) and automatically renumbers all figures and tables relative to their chapter (e.g., `Gambar 2.1`, `Tabel 3.2`).
+*   **Interactive Cross-Referencing:**
+    *   Generates a structured document map tree in the sidebar.
+    *   Allows you to insert a clickable reference link into the text with a single click.
+    *   Clicking **Fokus** in the sidebar jumps your cursor directly to that figure in the document.
+*   **Performance Optimization:** Runs on a pre-built $O(1)$ bookmark path cache map that avoids recursive document tree traversals, reducing document scan times from minutes to under **1.5 seconds**!
+</details>
+
+<details>
+<summary><b>3. Consolas Code-Block Line Numbering (Table-Aware)</b></summary>
+<br>
+
+*   **Problem:** Code listings in theses need line numbers, but manual numbering messes up code copying and formatting.
+*   **Solution:** Adds or removes cleanly aligned, monospace line numbers to selected paragraphs.
+*   **Advanced Styling:**
+    *   Forced black color (`#000000`) and **Consolas** font family for maximum legibility, ignoring the underlying code block styling.
+    *   Left-padded for perfect alignment (e.g., ` 9 `, `10 `, `11 `).
+    *   **Table-Aware:** Fully supports code blocks nested inside table cells.
+</details>
+
+<details>
+<summary><b>4. Client-Side Page Gap Auditor (Tampermonkey Userscript)</b></summary>
+<br>
+
+*   **Problem:** Google Docs does not expose its physical page layout or element coordinate offsets to the Apps Script API, making it impossible to detect large empty white spaces left at the bottom of pages when a large table or image overflows.
+*   **Solution:** A Tampermonkey browser userscript that runs in Firefox/Chrome and inspects the live rendered document.
+*   **How it works:**
+    *   **Canvas Pixel Scanner:** Google Docs renders its page view onto HTML5 canvas tiles. The userscript uses `getImageData` to read raw pixel buffers.
+    *   **Scan Upward Algorithm:** Scans the canvas from the bottom up to locate the last row containing non-white, non-transparent pixels, calculating the exact percentage of empty page space.
+    *   **CSP & Trusted Types Bypass:** Google Docs enforces strict Content Security Policies (CSP) and Trusted Types. The script bypasses this by avoiding `innerHTML` and using only secure programmatic DOM creation (`createElement`/`textContent`) and registering via `@grant GM_addStyle` to run in an isolated context.
+    *   **Persistent Accumulation Map:** Google Docs lazily renders pages and recycles off-screen canvases to save memory. The script tracks and remembers previous page measurements as you scroll through your document, displaying them in a draggable, floating UI panel.
+</details>
 
 ---
 
