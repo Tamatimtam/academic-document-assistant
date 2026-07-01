@@ -29,9 +29,11 @@ function getPersistedPreferences() {
   const props = PropertiesService.getDocumentProperties();
   const foreignStr = props.getProperty('FOREIGN_TERMS') || '[]';
   const excludedStr = props.getProperty('EXCLUDED_TERMS') || '[]';
+  const skipTables = props.getProperty('SKIP_TABLES_ITALICS') === 'true';
   return {
     foreignTerms: JSON.parse(foreignStr),
-    excludedTerms: JSON.parse(excludedStr)
+    excludedTerms: JSON.parse(excludedStr),
+    skipTables: skipTables
   };
 }
 
@@ -174,42 +176,63 @@ function analyzeDoc() {
   };
 }
 
-function applyItalicsToTerm(term) {
+function applyItalicsToTerm(term, skipTables) {
   const body = DocumentApp.getActiveDocument().getBody();
-  const pattern = "(?i)\\b" + escapeRegex(term) + "\\b";
+  const pattern = "(?i)\b" + escapeRegex(term) + "\b";
   let found = body.findText(pattern);
   while (found !== null) {
     let textElement = found.getElement().asText();
-    textElement.setItalic(found.getStartOffset(), found.getEndOffsetInclusive(), true);
+    if (!(skipTables && isInsideTable(textElement))) {
+      textElement.setItalic(found.getStartOffset(), found.getEndOffsetInclusive(), true);
+    }
     found = body.findText(pattern, found);
   }
 }
 
-function removeItalicsFromTerm(term) {
+function removeItalicsFromTerm(term, skipTables) {
   const body = DocumentApp.getActiveDocument().getBody();
-  const pattern = "(?i)\\b" + escapeRegex(term) + "\\b";
+  const pattern = "(?i)\b" + escapeRegex(term) + "\b";
   let found = body.findText(pattern);
   while (found !== null) {
     let textElement = found.getElement().asText();
-    textElement.setItalic(found.getStartOffset(), found.getEndOffsetInclusive(), false);
+    if (!(skipTables && isInsideTable(textElement))) {
+      textElement.setItalic(found.getStartOffset(), found.getEndOffsetInclusive(), false);
+    }
     found = body.findText(pattern, found);
   }
 }
 
-function applyItalicsToAll() {
+function applyItalicsToAll(skipTables) {
   const prefs = getPersistedPreferences();
   const foreignTerms = prefs.foreignTerms || [];
   const excludedTerms = prefs.excludedTerms || [];
   
+  const props = PropertiesService.getDocumentProperties();
+  props.setProperty('SKIP_TABLES_ITALICS', String(skipTables));
+  
   foreignTerms.forEach(term => {
-    applyItalicsToTerm(term);
+    applyItalicsToTerm(term, skipTables);
   });
   
   excludedTerms.forEach(term => {
-    removeItalicsFromTerm(term);
+    removeItalicsFromTerm(term, skipTables);
   });
   
   return { success: true, count: foreignTerms.length };
+}
+
+function isInsideTable(element) {
+  let parent = element.getParent ? element.getParent() : null;
+  while (parent) {
+    const type = parent.getType();
+    if (type === DocumentApp.ElementType.TABLE || 
+        type === DocumentApp.ElementType.TABLE_CELL || 
+        type === DocumentApp.ElementType.TABLE_ROW) {
+      return true;
+    }
+    parent = parent.getParent ? parent.getParent() : null;
+  }
+  return false;
 }
 
 function escapeRegex(string) {

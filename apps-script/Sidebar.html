@@ -103,10 +103,17 @@
 
       <div id="terms-main-panel" class="hidden space-y-5">
         <!-- Batch Apply Italics Section -->
-        <div class="bg-indigo-50/50 border border-indigo-100 rounded p-3 space-y-2">
+        <div class="bg-indigo-50/50 border border-indigo-100 rounded p-3 space-y-2.5">
           <button id="btn-apply-italics" onclick="doApplyItalics()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
             <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Terapkan Cetak Miring ke Dokumen
           </button>
+          <!-- Skip Tables Toggle -->
+          <div class="flex items-center gap-2 pt-0.5">
+            <input type="checkbox" id="toggle-skip-tables" class="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 border-slate-300 cursor-pointer">
+            <label for="toggle-skip-tables" class="text-[10px] text-slate-600 font-medium cursor-pointer select-none">
+              Abaikan istilah di dalam tabel
+            </label>
+          </div>
           <div id="apply-status" class="hidden text-[10px] text-center font-mono p-1.5 rounded mt-2"></div>
         </div>
 
@@ -235,6 +242,10 @@
         .withSuccessHandler(function(result) {
           state.foreignTerms = result.foreignTerms || [];
           state.excludedTerms = result.excludedTerms || [];
+          const toggle = document.getElementById('toggle-skip-tables');
+          if (toggle) {
+            toggle.checked = result.skipTables || false;
+          }
           if (state.foreignTerms.length > 0 || state.excludedTerms.length > 0) {
             document.getElementById('btn-analyze').classList.add('hidden');
             document.getElementById('terms-main-panel').classList.remove('hidden');
@@ -443,6 +454,8 @@
     function doApplyItalics() {
       const btn = document.getElementById('btn-apply-italics');
       const statusEl = document.getElementById('apply-status');
+      const toggle = document.getElementById('toggle-skip-tables');
+      const skipTables = toggle ? toggle.checked : false;
       btn.disabled = true;
       btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-3.5 h-3.5"></i> Memproses...';
       lucide.createIcons();
@@ -469,7 +482,7 @@
           statusEl.classList.remove('hidden');
           setTimeout(() => statusEl.classList.add('hidden'), 4000);
         })
-        .applyItalicsToAll();
+        .applyItalicsToAll(skipTables);
     }
 
     // ==========================================
