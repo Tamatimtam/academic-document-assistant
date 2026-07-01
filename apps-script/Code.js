@@ -168,10 +168,6 @@ function analyzeDoc() {
   const allDetected = [...new Set([...foreignTerms, ...newlyDetectedForeign, ...detectedCodeVars, ...DOMAIN_PHRASES])].sort();
   savePersistedPreferences(allDetected, excludedTerms);
   
-  allDetected.forEach(term => {
-    applyItalicsToTerm(term);
-  });
-  
   return {
     foreignTerms: allDetected,
     excludedTerms: excludedTerms
@@ -198,6 +194,22 @@ function removeItalicsFromTerm(term) {
     textElement.setItalic(found.getStartOffset(), found.getEndOffsetInclusive(), false);
     found = body.findText(pattern, found);
   }
+}
+
+function applyItalicsToAll() {
+  const prefs = getPersistedPreferences();
+  const foreignTerms = prefs.foreignTerms || [];
+  const excludedTerms = prefs.excludedTerms || [];
+  
+  foreignTerms.forEach(term => {
+    applyItalicsToTerm(term);
+  });
+  
+  excludedTerms.forEach(term => {
+    removeItalicsFromTerm(term);
+  });
+  
+  return { success: true, count: foreignTerms.length };
 }
 
 function escapeRegex(string) {

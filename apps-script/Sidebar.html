@@ -65,7 +65,6 @@
       <h1 class="academic-title font-bold text-xl tracking-tight flex items-center gap-2">
         <i data-lucide="book-open" class="w-5 h-5 text-slate-800"></i> Asisten Skripsi
       </h1>
-      <span class="text-[9px] font-mono tracking-widest text-slate-400 uppercase">AGY v2.0</span>
     </div>
     <div class="w-8 h-[2px] bg-slate-800 mt-2"></div>
     <p class="text-[10px] text-slate-500 italic mt-2.5">Otomatisasi & Standardisasi Naskah Ilmiah</p>
@@ -103,6 +102,14 @@
       </div>
 
       <div id="terms-main-panel" class="hidden space-y-5">
+        <!-- Batch Apply Italics Section -->
+        <div class="bg-indigo-50/50 border border-indigo-100 rounded p-3 space-y-2">
+          <button id="btn-apply-italics" onclick="doApplyItalics()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
+            <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Terapkan Cetak Miring ke Dokumen
+          </button>
+          <div id="apply-status" class="hidden text-[10px] text-center font-mono p-1.5 rounded mt-2"></div>
+        </div>
+
         <div class="space-y-2">
           <div class="flex justify-between items-baseline border-b border-slate-200 pb-1">
             <span class="academic-title font-bold text-xs uppercase tracking-wide">Terdeteksi Asing</span>
@@ -390,7 +397,6 @@
       }
       renderLists();
       saveStateToBackend();
-      google.script.run.removeItalicsFromTerm(term);
     }
 
     // Memindahkan kata dari pengecualian kembali dimiringkan
@@ -402,7 +408,6 @@
       }
       renderLists();
       saveStateToBackend();
-      google.script.run.applyItalicsToTerm(term);
     }
 
     function deleteExcluded(term) {
@@ -421,7 +426,6 @@
           input.value = '';
           renderLists();
           saveStateToBackend();
-          google.script.run.applyItalicsToTerm(value);
         }
       } else if (type === 'excluded') {
         const input = document.getElementById('add-excluded-input');
@@ -432,9 +436,40 @@
           input.value = '';
           renderLists();
           saveStateToBackend();
-          google.script.run.removeItalicsFromTerm(value);
         }
       }
+    }
+
+    function doApplyItalics() {
+      const btn = document.getElementById('btn-apply-italics');
+      const statusEl = document.getElementById('apply-status');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-3.5 h-3.5"></i> Memproses...';
+      lucide.createIcons();
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="check-check" class="w-3.5 h-3.5"></i> Terapkan Cetak Miring ke Dokumen';
+          lucide.createIcons();
+          
+          if (res.success) {
+            statusEl.textContent = '✓ ' + res.count + ' istilah asing dimiringkan!';
+            statusEl.className = 'text-[10px] text-center font-mono text-emerald-700 bg-emerald-50 p-1.5 rounded border border-emerald-100 mt-2';
+            statusEl.classList.remove('hidden');
+            setTimeout(() => statusEl.classList.add('hidden'), 4000);
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="check-check" class="w-3.5 h-3.5"></i> Terapkan Cetak Miring ke Dokumen';
+          lucide.createIcons();
+          statusEl.textContent = '✗ Gagal: ' + err;
+          statusEl.className = 'text-[10px] text-center font-mono text-red-700 bg-red-50 p-1.5 rounded border border-red-100 mt-2';
+          statusEl.classList.remove('hidden');
+          setTimeout(() => statusEl.classList.add('hidden'), 4000);
+        })
+        .applyItalicsToAll();
     }
 
     // ==========================================
