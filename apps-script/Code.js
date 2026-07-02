@@ -230,6 +230,10 @@ function isInsideTable(element) {
         type === DocumentApp.ElementType.TABLE_ROW) {
       return true;
     }
+    parent = parent.getParent ? parent.getParent() : null;
+  }
+  return false;
+}
 
 function applyItalicsToSelection() {
   const doc = DocumentApp.getActiveDocument();
@@ -273,9 +277,13 @@ function applyItalicsToSelection() {
 
     // Apply italics for foreign terms
     foreignTerms.forEach(term => {
-      const pattern = new RegExp('\b' + escapeRegex(term) + '\b', 'gi');
+      // Use double backslashes for word boundary in RegExp constructor
+      const pattern = new RegExp('\\b' + escapeRegex(term) + '\\b', 'gi');
       let match;
       while ((match = pattern.exec(textContent)) !== null) {
+        if (match.index === pattern.lastIndex) {
+          pattern.lastIndex++; // Prevent infinite loops for 0-width matches
+        }
         const matchStart = match.index;
         const matchEnd = matchStart + term.length - 1;
         
@@ -291,9 +299,12 @@ function applyItalicsToSelection() {
 
     // Remove italics for excluded terms
     excludedTerms.forEach(term => {
-      const pattern = new RegExp('\b' + escapeRegex(term) + '\b', 'gi');
+      const pattern = new RegExp('\\b' + escapeRegex(term) + '\\b', 'gi');
       let match;
       while ((match = pattern.exec(textContent)) !== null) {
+        if (match.index === pattern.lastIndex) {
+          pattern.lastIndex++; // Prevent infinite loops for 0-width matches
+        }
         const matchStart = match.index;
         const matchEnd = matchStart + term.length - 1;
         
@@ -308,10 +319,6 @@ function applyItalicsToSelection() {
   });
 
   return { success: true, count: applyCount, message: applyCount + ' kata asing dimiringkan pada pilihan.' };
-}
-    parent = parent.getParent ? parent.getParent() : null;
-  }
-  return false;
 }
 
 function escapeRegex(string) {
