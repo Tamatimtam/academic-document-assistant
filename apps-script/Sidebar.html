@@ -79,7 +79,7 @@
       <i data-lucide="image" class="w-3.5 h-3.5"></i> Gambar & Tabel
     </button>
     <button id="tab-btn-code" onclick="switchTab('code')" class="flex-1 py-3 text-center border-b-[3px] border-transparent hover:text-slate-800 transition focus:outline-none flex items-center justify-center gap-1.5">
-      <i data-lucide="code-2" class="w-3.5 h-3.5"></i> Kode
+      <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Alat Teks
     </button>
   </div>
 
@@ -188,41 +188,62 @@
       </div>
     </div>
 
-    <!-- 3. TAB PANEL: BLOK KODE (LINE NUMBERS) -->
-    <div id="tab-content-code" class="hidden space-y-4">
-      <div class="bg-slate-100 border border-slate-200 rounded p-3 italic text-slate-600 leading-relaxed text-[11px]">
-        Pilih baris-baris kode di dokumen, lalu klik tombol di bawah untuk menambahkan atau menghapus nomor baris. Pemformatan teks asli tidak akan berubah.
-      </div>
+    <!-- 3. TAB PANEL: ALAT TEKS (DAFPUS & KODE) -->
+    <div id="tab-content-code" class="hidden space-y-5">
+      
+      <!-- CARD 1: FORMAT DAFTAR PUSTAKA -->
+      <div class="border border-slate-200 bg-white rounded-xl p-4 space-y-3.5 shadow-sm">
+        <div class="flex items-center gap-2 border-b border-slate-150 pb-2">
+          <i data-lucide="book-open" class="w-4 h-4 text-indigo-600"></i>
+          <span class="font-bold text-xs uppercase tracking-wider text-slate-800">Format Daftar Pustaka (Dafpus)</span>
+        </div>
+        
+        <div class="text-[10px] text-slate-600 leading-relaxed space-y-1 bg-slate-50 p-2.5 rounded-lg italic">
+          <p class="font-semibold text-slate-700">Ketentuan Pedoman Skripsi:</p>
+          <ul class="list-disc pl-4 space-y-0.5">
+            <li><strong>Spasi:</strong> 1.15 dalam entri, jarak 1.5 spasi antar entri.</li>
+            <li><strong>Indentasi:</strong> Menggantung (hanging indent) 5 ketukan (1.27 cm / 0.5").</li>
+          </ul>
+        </div>
 
-      <!-- Options -->
-      <div class="space-y-2">
-        <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Nomor Awal</label>
-        <input type="number" id="code-start-line" value="1" min="0"
-          class="w-full border border-slate-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-slate-800 bg-white font-mono" />
-      </div>
-
-      <!-- Actions -->
-      <div class="flex gap-2">
-        <button id="btn-add-line-numbers" onclick="doAddLineNumbers()"
-          class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
-          <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> Tambah Nomor Baris
+        <button id="btn-format-dafpus" onclick="doFormatDafpus()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Terapkan Format Dafpus ke Pilihan
         </button>
-        <button id="btn-remove-line-numbers" onclick="doRemoveLineNumbers()"
-          class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5">
-          <i data-lucide="x" class="w-3.5 h-3.5"></i> Hapus Nomor
-        </button>
+        <div id="dafpus-tool-status" class="hidden rounded p-2.5 text-[11px] font-medium text-center"></div>
       </div>
 
-      <!-- Status message -->
-      <div id="code-tool-status" class="hidden rounded p-2.5 text-[11px] font-medium text-center"></div>
+      <!-- CARD 2: NOMOR BARIS BLOK KODE -->
+      <div class="border border-slate-200 bg-white rounded-xl p-4 space-y-3.5 shadow-sm">
+        <div class="flex items-center gap-2 border-b border-slate-150 pb-2">
+          <i data-lucide="code-2" class="w-4 h-4 text-indigo-600"></i>
+          <span class="font-bold text-xs uppercase tracking-wider text-slate-800">Nomor Baris Blok Kode</span>
+        </div>
+        
+        <p class="text-[11px] text-slate-500 italic">
+          Pilih baris-baris kode di dokumen untuk menambahkan/menghapus nomor baris Consolas.
+        </p>
 
-      <!-- Tips -->
-      <div class="border border-slate-200 rounded p-3 space-y-1.5 text-[10px] text-slate-500">
-        <p class="font-semibold text-slate-600">Cara pakai:</p>
-        <p>1. Blok semua baris kode di dokumen</p>
-        <p>2. Atur <strong>Nomor Awal</strong> (biasanya 1)</p>
-        <p>3. Klik <strong>Tambah Nomor Baris</strong></p>
-        <p class="pt-1">Untuk menghapus, blok ulang kode tersebut lalu klik <strong>Hapus Nomor</strong>.</p>
+        <!-- Options -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Nomor Awal</label>
+          <input type="number" id="code-start-line" value="1" min="0"
+            class="w-full border border-slate-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-slate-800 bg-white font-mono" />
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-2">
+          <button id="btn-add-line-numbers" onclick="doAddLineNumbers()"
+            class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
+            <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> Tambah Nomor
+          </button>
+          <button id="btn-remove-line-numbers" onclick="doRemoveLineNumbers()"
+            class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-3 rounded transition text-xs flex items-center justify-center gap-1.5">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i> Hapus Nomor
+          </button>
+        </div>
+
+        <!-- Status message -->
+        <div id="code-tool-status" class="hidden rounded p-2.5 text-[11px] font-medium text-center"></div>
       </div>
     </div>
 
@@ -330,6 +351,40 @@
           setCodeStatus('✗ Error: ' + err.message, true);
         })
         .removeLineNumbers();
+    function doFormatDafpus() {
+      const btn = document.getElementById('btn-format-dafpus');
+      const statusEl = document.getElementById('dafpus-tool-status');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-3.5 h-3.5"></i> Memproses...';
+      lucide.createIcons();
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Terapkan Format Dafpus ke Pilihan';
+          lucide.createIcons();
+          
+          statusEl.textContent = res.message;
+          if (res.success) {
+            statusEl.className = 'rounded p-2.5 text-[11px] font-medium text-center bg-green-50 text-green-700 border border-green-200 mt-2';
+          } else {
+            statusEl.className = 'rounded p-2.5 text-[11px] font-medium text-center bg-red-50 text-red-700 border border-red-200 mt-2';
+          }
+          statusEl.classList.remove('hidden');
+          setTimeout(() => statusEl.classList.add('hidden'), 5000);
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Terapkan Format Dafpus ke Pilihan';
+          lucide.createIcons();
+          
+          statusEl.textContent = '✗ Error: ' + err;
+          statusEl.className = 'rounded p-2.5 text-[11px] font-medium text-center bg-red-50 text-red-700 border border-red-200 mt-2';
+          statusEl.classList.remove('hidden');
+          setTimeout(() => statusEl.classList.add('hidden'), 5000);
+        })
+        .formatBibliographySelection();
     }
 
     // ==========================================

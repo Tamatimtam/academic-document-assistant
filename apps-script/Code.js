@@ -1002,3 +1002,48 @@ function removeLineNumbers() {
     message: removed + ' nomor baris dihapus.' + (skipped > 0 ? ' (' + skipped + ' baris dilewati)' : '')
   };
 }
+
+/**
+ * Formats the active selection as bibliography (Daftar Pustaka) based on guidelines:
+ * - Line spacing inside an entry: 1.15
+ * - Spacing after each entry (paragraph spacing after): 18 points (equivalent to 1.5 lines of space in 12pt font)
+ * - Hanging indent: 36 points (0.5 inches / 1.27 cm / 5 spaces)
+ */
+function formatBibliographySelection() {
+  const doc = DocumentApp.getActiveDocument();
+  const selection = doc.getSelection();
+
+  if (!selection) {
+    return { success: false, message: 'Silakan pilih/blok teks daftar pustaka di dokumen terlebih dahulu.' };
+  }
+
+  // Reuse getSelectedParagraphs to fetch all paragraphs inside the selection (including inside tables)
+  const paragraphs = getSelectedParagraphs(selection);
+
+  if (!paragraphs.length) {
+    return { success: false, message: 'Tidak ada paragraf daftar pustaka yang dapat diproses dalam pilihan.' };
+  }
+
+  // 1.27 cm = 0.5 inches = 36 points
+  const leftIndent = 36.0;
+  const firstLineIndent = -36.0;
+  const lineSpacing = 1.15;
+  const spacingAfter = 18.0;
+
+  paragraphs.forEach(para => {
+    try {
+      para.setLineSpacing(lineSpacing);
+      para.setSpacingAfter(spacingAfter);
+      para.setLeftIndent(leftIndent);
+      para.setFirstLineIndent(firstLineIndent);
+    } catch (e) {
+      // Ignore paragraphs that don't support these formatting parameters
+    }
+  });
+
+  return { 
+    success: true, 
+    count: paragraphs.length, 
+    message: paragraphs.length + ' entri daftar pustaka berhasil diformat (Spasi 1.15, Jarak Antar 1.5, Indentasi Gantung).' 
+  };
+}
