@@ -230,6 +230,85 @@ function isInsideTable(element) {
         type === DocumentApp.ElementType.TABLE_ROW) {
       return true;
     }
+
+function applyItalicsToSelection() {
+  const doc = DocumentApp.getActiveDocument();
+  const selection = doc.getSelection();
+  if (!selection) {
+    return { success: false, message: 'Silakan pilih/blok teks di dokumen terlebih dahulu.' };
+  }
+
+  const prefs = getPersistedPreferences();
+  const foreignTerms = prefs.foreignTerms || [];
+  const excludedTerms = prefs.excludedTerms || [];
+  if (!foreignTerms.length) {
+    return { success: false, message: 'Tidak ada istilah asing untuk dimiringkan.' };
+  }
+
+  const rangeElements = selection.getRangeElements();
+  let applyCount = 0;
+
+  rangeElements.forEach(re => {
+    let el = re.getElement();
+    
+    // Attempt to get text editable interface
+    let textObj = null;
+    try {
+      textObj = el.editAsText();
+    } catch (e) {
+      return; // Element not text-editable, skip
+    }
+    
+    if (!textObj) return;
+    const textContent = el.getText();
+    if (!textContent) return;
+    
+    let startLimit = 0;
+    let endLimit = textContent.length - 1;
+    
+    if (re.isPartial()) {
+      startLimit = re.getStartOffset();
+      endLimit = re.getEndOffsetInclusive();
+    }
+
+    // Apply italics for foreign terms
+    foreignTerms.forEach(term => {
+      const pattern = new RegExp('\b' + escapeRegex(term) + '\b', 'gi');
+      let match;
+      while ((match = pattern.exec(textContent)) !== null) {
+        const matchStart = match.index;
+        const matchEnd = matchStart + term.length - 1;
+        
+        const start = Math.max(matchStart, startLimit);
+        const end = Math.min(matchEnd, endLimit);
+        
+        if (start <= end) {
+          textObj.setItalic(start, end, true);
+          applyCount++;
+        }
+      }
+    });
+
+    // Remove italics for excluded terms
+    excludedTerms.forEach(term => {
+      const pattern = new RegExp('\b' + escapeRegex(term) + '\b', 'gi');
+      let match;
+      while ((match = pattern.exec(textContent)) !== null) {
+        const matchStart = match.index;
+        const matchEnd = matchStart + term.length - 1;
+        
+        const start = Math.max(matchStart, startLimit);
+        const end = Math.min(matchEnd, endLimit);
+        
+        if (start <= end) {
+          textObj.setItalic(start, end, false);
+        }
+      }
+    });
+  });
+
+  return { success: true, count: applyCount, message: applyCount + ' kata asing dimiringkan pada pilihan.' };
+}
     parent = parent.getParent ? parent.getParent() : null;
   }
   return false;
